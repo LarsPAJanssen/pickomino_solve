@@ -27,7 +27,7 @@ docker-compose up -d --build
 
 The application will be available at:
 - Frontend: `http://localhost:80` (or configured port)
-- Backend API: `http://localhost:8000`
+- Backend API: `http://localhost:6000`
 
 ## Development
 
@@ -58,6 +58,45 @@ You may observe that the expected score for certain actions (e.g., `(Save dice, 
 - **Cause**: The current MCTS implementation caches the result of the stochastic `ROLL` action after the first visit. Effectively, the AI "freezes" the dice outcomes for that branch and solves the now-deterministic future perfectly.
 - **Implication**: The AI optimizes for a specific "lucky" (or unlucky) future rather than the true average.
 - **Future Roadmap**: We plan to implement **Open Loop MCTS** or **Chance Nodes** to correctly model the probabilistic nature of the dice rolls.
+
+
+## Hosting on Ubuntu Server
+
+This guide assumes a fresh Ubuntu installation (tested on 20.04/22.04 LTS). We use a **pull-based deployment strategy**: code is pulled from Git, and Docker builds the containers directly on the server.
+
+### 1. Deployment
+
+Clone the repository and start the application.
+
+```bash
+# Clone the repository (HTTPS - No keys required for public repos)
+git clone https://github.com/LarsPAJanssen/mcts-regenwormen.git
+cd mcts-regenwormen
+
+# Start the application
+# This builds the images and starts containers in the background
+docker-compose up -d --build
+```
+
+The application is now running:
+- **Frontend**: `http://<YOUR_SERVER_IP>`
+- **Backend**: `http://<YOUR_SERVER_IP>:6000`
+
+### 2. Management & Updates
+
+Common maintenance tasks.
+
+```bash
+# View logs (follow mode)
+docker-compose logs -f
+
+# Update Application
+git pull origin main       # Get latest code
+docker-compose up -d --build # Rebuild and restart only changed containers
+
+# Stop Application
+docker-compose down
+```
 
 ## License
 
