@@ -62,9 +62,6 @@ class MCTS:
             best_child = None
 
             for action, child in current_node.children.items():
-                if child.is_terminal_node():
-                    continue
-
                 # UCB1 formula: Q/N + c * sqrt(ln(Parent_N) / N)
                 if child.N == 0:
                     ucb = float(
