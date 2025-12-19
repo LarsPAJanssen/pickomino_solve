@@ -1,62 +1,268 @@
+:root {
+    --bg-color: #1a1a1a;
+    --card-bg: #2d2d2d;
+    --text-primary: #e0e0e0;
+    --text-secondary: #aaaaaa;
+    --accent: #5e81ac;
+    --accent-hover: #81a1c1;
+    --danger: #bf616a;
+    --success: #a3be8c;
+    --die-worm: #d08770;
+    --die-bg: #eceff4;
+    --die-dot: #2e3440;
+}
+
 body {
-    font-family: Arial, sans-serif;
-    background: #f4f4f4;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg-color);
+    color: var(--text-primary);
     margin: 0;
     padding: 0;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
 }
+
 .container {
-    max-width: 600px;
-    margin: 40px auto;
-    background: #fff;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 900px;
+    margin: 40px 20px;
+    background: var(--card-bg);
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
 }
+
 h1 {
     text-align: center;
-    color: #333;
+    color: var(--text-primary);
+    margin-bottom: 30px;
+    font-weight: 300;
 }
-form {
+
+/* Sections */
+.section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 8px;
+}
+
+h2 {
+    margin-top: 0;
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+/* Dice Controls */
+.dice-controls {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     gap: 15px;
+    justify-content: center;
+    margin-bottom: 20px;
 }
-label {
+
+/* Dice Visuals */
+.die-btn {
+    width: 50px;
+    height: 50px;
+    background: var(--die-bg);
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    transition: transform 0.1s, box-shadow 0.1s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.die-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+}
+
+.die-btn:active {
+    transform: translateY(0);
+}
+
+/* Dots logic using grid */
+.die-face {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    padding: 2px;
+}
+
+.dot {
+    background-color: var(--die-dot);
+    border-radius: 50%;
+    width: 6px;
+    height: 6px;
+    align-self: center;
+    justify-self: center;
+}
+
+/* Worm Styling */
+.worm-face {
+    font-size: 24px;
+    color: var(--die-worm);
     font-weight: bold;
 }
-input[type="text"] {
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-input[type="range"] {
-    width: 100%;
-}
-button {
+
+/* Dice Pools */
+.dice-pool {
+    min-height: 70px;
+    background: rgba(255,255,255,0.05);
+    border: 2px dashed rgba(255,255,255,0.1);
+    border-radius: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
     padding: 10px;
-    background: #007bff;
-    color: #fff;
-    border: none;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.dice-pool.invalid {
+    border-color: var(--danger);
+    background: rgba(191, 97, 106, 0.1);
+}
+
+.pool-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.count-badge {
+    background: var(--accent);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+}
+
+.count-badge.error {
+    background: var(--danger);
+}
+
+/* Clickable dice in pool */
+.die-in-pool {
+    width: 40px;
+    height: 40px;
+    cursor: grab;
+    animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.die-in-pool:hover {
+    transform: scale(1.1);
+}
+
+@keyframes popIn {
+    from { opacity: 0; transform: scale(0.5); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* Controls */
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.btn-secondary {
+    background: transparent;
+    border: 1px solid var(--text-secondary);
+    color: var(--text-secondary);
+    padding: 5px 10px;
+    font-size: 0.8rem;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 16px;
 }
-button:hover {
-    background: #0056b3;
+
+.btn-secondary:hover {
+    background: rgba(255,255,255,0.05);
+    color: var(--text-primary);
 }
-#results {
-    margin-top: 30px;
+
+/* Form Controls */
+.slider-container {
+    padding: 20px 0;
 }
+
+input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent);
+}
+
+.cta-button {
+    width: 100%;
+    padding: 15px;
+    background: var(--accent);
+    color: white;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 20px;
+}
+
+.cta-button:hover {
+    background: var(--accent-hover);
+}
+
+.cta-button:disabled {
+    background: var(--text-secondary);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* Table */
 table {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 20px;
+    color: var(--text-primary);
 }
+
 th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: center;
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
 }
+
 th {
-    background: #007bff;
-    color: #fff;
+    border-bottom: 2px solid var(--accent);
+    color: var(--accent);
+    font-weight: 600;
+}
+
+tr:hover {
+    background: rgba(255,255,255,0.02);
+}
+
+/* Chart Container */
+.chart-container {
+    position: relative;
+    height: 400px;
+    width: 100%;
+    margin-top: 20px;
+}
+
+/* Error Message */
+.error-msg {
+    color: var(--danger);
+    font-size: 0.9rem;
+    margin-top: 5px;
+    min-height: 20px;
 }
