@@ -73,6 +73,7 @@ class GameState:
                 random.randrange(1, 7)
                 for _ in range(new_state.N_DICE - len(new_state.hand))
             ]
+            new_state.dice_throw.sort()
 
         if action.name == Action.SAVE_DICE:
             for d in new_state.dice_throw:

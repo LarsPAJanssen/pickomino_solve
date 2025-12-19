@@ -2,7 +2,7 @@
 name = "mcts-regenwormen"
 version = "0.1.0"
 description = "Add your description here"
-readme = "README.md"
+readme = "../README.md"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.116.1",

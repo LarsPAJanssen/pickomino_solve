@@ -13,7 +13,7 @@ RUN pip install --upgrade pip && \
     pip install .
 
 # Copy the rest of the code
-COPY ./backend .
+COPY . .
 
 # Expose port
 EXPOSE 8000

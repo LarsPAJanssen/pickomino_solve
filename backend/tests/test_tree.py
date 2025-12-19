@@ -1,5 +1,4 @@
-from src.game import Action, GameState
-from src.tree import MCTS, Node
+from src import MCTS, Action, GameState, Node
 
 
 class DummyAction(Action):

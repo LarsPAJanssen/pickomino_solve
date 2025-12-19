@@ -1,14 +1,21 @@
 import math
 import random
-from typing import List, TypedDict
+from collections import defaultdict
+from typing import Dict, List, TypedDict
 
-from src.game import Action, GameState
+from .game import Action, GameState
+
+
+class HistoryPoint(TypedDict):
+    simulations: int
+    expected_score: float
 
 
 class ResultAction(TypedDict):
     expected_score: float
     action: Action
     visit_count: int
+    history: List[HistoryPoint]
 
 
 class Node:
@@ -122,12 +129,16 @@ class MCTS:
             current_node.Q += score
             current_node = current_node.parent
 
-    def run(self, num_simulations: int) -> List[ResultAction]:
+    def run(
+        self, num_simulations: int, monitor_interval: int = 100
+    ) -> List[ResultAction]:
         """
         Runs the MCTS algorithm for a specified number of simulations
         and returns the best action from the root.
         """
-        for _ in range(num_simulations):
+        history_log: Dict[Action, List[HistoryPoint]] = defaultdict(list)
+
+        for i in range(1, num_simulations + 1):
             # 1. Selection
             leaf_node = self._select()
 
@@ -147,6 +158,15 @@ class MCTS:
             # 4. Backpropagation
             self._backpropagate(node_to_simulate_from, score)
 
+            # Track history periodically
+            if i % monitor_interval == 0:
+                for action, child in self.root.children.items():
+                    if child.N > 0:
+                        avg_score = child.Q / child.N
+                        history_log[action].append(
+                            {"simulations": i, "expected_score": avg_score}
+                        )
+
         # After all simulations, choose the action from the root with the highest average score (Q/N)
         # This is a common strategy, sometimes referred to as 'greedy' choice at the end.
         if not self.root.children:
@@ -160,9 +180,16 @@ class MCTS:
                     avg_score = child.Q / child.N
                 else:
                     avg_score = 0  # If not visited, consider its score as 0
+
+                # Retrieve history for this action
+                action_history = history_log.get(action, [])
+
                 results.append(
                     ResultAction(
-                        expected_score=avg_score, action=action, visit_count=child.N
+                        expected_score=avg_score,
+                        action=action,
+                        visit_count=child.N,
+                        history=action_history,
                     )
                 )
         return results
