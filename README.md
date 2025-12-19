@@ -2,6 +2,8 @@
 
 A web-based implementation of the "Regenwormen" (Pickomino) dice game, featuring a powerful AI opponent powered by Monte Carlo Tree Search (MCTS).
 
+![Regenwormen UI](assets/ui.png)
+
 ## Features
 
 - **Interactive UI**: Play the game using a modern, dark-themed web interface with clickable 3D dice.
