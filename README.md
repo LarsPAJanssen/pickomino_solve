@@ -59,6 +59,21 @@ You may observe that the expected score for certain actions (e.g., `(Save dice, 
 - **Implication**: The AI optimizes for a specific "lucky" (or unlucky) future rather than the true average.
 - **Future Roadmap**: We plan to implement **Open Loop MCTS** or **Chance Nodes** to correctly model the probabilistic nature of the dice rolls.
 
+### Future Roadmap: Game Logic & UI
+
+#### Valid End Scores & Tile Logic
+Currently, the game accepts any gathered sum as a valid score. In the physical game of Pickomino (Regenwormen), a turn is only successful if:
+1. The total score matches a tile still available on the board (values 21–36).
+2. At least one "Worm" (dice value 5/6) has been saved.
+
+**Proposed Solution Direction:**
+- **Backend Logic**: Update `GameState.execute_action` in `backend/src/game.py`. Specifically, in the `Action.STOP` handler, validate the `score` against the available tile set. If invalid, the result should be a **BUST** (score = 0).
+- **Frontend UI**:
+    - Dynamically disable or dim the "Stop" button in `frontend/app.js` when the current hand does not meet the valid score requirements.
+    - Highlight valid target tiles in the UI to guide the player (or AI).
+- **Configuration**: Add a new configuration panel to allow users to toggle which tiles are "available" (e.g., to simulate a mid-game state where tiles 21, 24, and 30 have already been taken).
+
+
 
 ## Hosting on Ubuntu Server
 
