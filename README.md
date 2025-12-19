@@ -70,8 +70,8 @@ Clone the repository and start the application.
 
 ```bash
 # Clone the repository (HTTPS - No keys required for public repos)
-git clone https://github.com/LarsPAJanssen/mcts-regenwormen.git
-cd mcts-regenwormen
+git clone https://github.com/LarsPAJanssen/pickomino_solve.git
+cd pickomino_solve
 
 # Start the application
 # This builds the images and starts containers in the background
