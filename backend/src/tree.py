@@ -44,6 +44,23 @@ class Node:
         return f"Node(Q={self.Q:.2f}, N={self.N}, Actions Left={len(self.unvisited_actions)})"
 
 
+class ChanceNode:
+    def __init__(self, state: GameState, parent: Node, action_taken: Action):
+        self.state = state
+        self.parent = parent
+        self.action_taken = action_taken
+        self.children = []  # List of child Nodes (outcomes)
+        self.probabilities = []  # Corresponding probabilities
+        self.N = 0
+        self.Q = 0.0
+
+    def is_terminal_node(self) -> bool:
+        return False
+
+    def is_fully_expanded(self) -> bool:
+        return True
+
+
 class MCTS:
     def __init__(self, initial_game_state: GameState, c_param: float = math.sqrt(2)):
         self.root = Node(initial_game_state)
@@ -58,6 +75,15 @@ class MCTS:
 
         # If the current node is not fully expanded, return it for expansion
         while current_node.is_fully_expanded() and not current_node.is_terminal_node():
+            # If we hit a ChanceNode (which should be fully expanded immediately upon creation),
+            # we must sample a child to continue the traversal (simulation of the roll).
+            if isinstance(current_node, ChanceNode):
+                # Sample a child based on probabilities
+                current_node = random.choices(
+                    current_node.children, weights=current_node.probabilities, k=1
+                )[0]
+                continue
+
             best_ucb = -float("inf")
             best_child = None
 
@@ -93,10 +119,30 @@ class MCTS:
         action = random.choice(node.unvisited_actions)
         node.unvisited_actions.remove(action)
 
-        new_state = node.state.execute_action(action)
-        new_child = Node(new_state, parent=node, action_taken=action)
-        node.children[action] = new_child
-        return new_child
+        if action.name == Action.ROLL:
+            # Create a ChanceNode
+            chance_node = ChanceNode(node.state, parent=node, action_taken=action)
+            node.children[action] = chance_node
+
+            # Immediately fully expand the ChanceNode
+            possible_outcomes = node.state.get_possible_rolls()
+
+            for roll, prob in possible_outcomes:
+                # Create the specific outcome state
+                child_state = node.state.apply_roll_outcome(roll)
+                child_node = Node(
+                    child_state, parent=chance_node, action_taken=None
+                )  # action_taken is implicitly the roll outcome
+
+                chance_node.children.append(child_node)
+                chance_node.probabilities.append(prob)
+
+            return chance_node
+        else:
+            new_state = node.state.execute_action(action)
+            new_child = Node(new_state, parent=node, action_taken=action)
+            node.children[action] = new_child
+            return new_child
 
     def _simulate(self, node: Node) -> float:
         """
@@ -127,7 +173,7 @@ class MCTS:
             current_node = current_node.parent
 
     def run(
-        self, num_simulations: int, monitor_interval: int = 100
+        self, num_simulations: int, monitor_interval: int = 1000
     ) -> List[ResultAction]:
         """
         Runs the MCTS algorithm for a specified number of simulations
@@ -145,6 +191,15 @@ class MCTS:
                 # If it is fully expanded (and not terminal), _select would have taken us deeper.
                 # So if we reach here and it's not terminal, we must expand.
                 node_to_simulate_from = self._expand(leaf_node)
+
+                # If we expanded into a ChanceNode, we need to pick one of its children to start simulation
+                if isinstance(node_to_simulate_from, ChanceNode):
+                    node_to_simulate_from = random.choices(
+                        node_to_simulate_from.children,
+                        weights=node_to_simulate_from.probabilities,
+                        k=1,
+                    )[0]
+
             else:
                 # If it's a terminal node, we simulate from itself (score is already final)
                 node_to_simulate_from = leaf_node

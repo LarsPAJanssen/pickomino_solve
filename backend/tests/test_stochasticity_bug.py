@@ -2,20 +2,10 @@ from src.game import GameState
 from src.tree import MCTS, Action
 
 
-def test_roll_determinism_bug():
+def test_chance_node_implementation():
     """
-    This test demonstrates that the current MCTS implementation incorrectly caches
-    the result of a stochastic ROLL action.
-
-    Expected behavior (in a correct MCTS for stochastic games):
-    - Expanding 'ROLL' multiple times (or simulating it) should result in different game states
-      (different dice throws) effectively or branch into chance nodes.
-
-    Current behavior (Bug):
-    - The 'ROLL' action is treated as a standard action.
-    - Once expanded, the resulting child node (with a specific random dice throw) is stored in `node.children`.
-    - All subsequent visits to 'ROLL' go to this EXACT same child node.
-    - The AI effectively solves a deterministic game where the dice rolls are pre-seeded by the first visit.
+    Test that the ROLL action now leads to a ChanceNode which is fully expanded
+    into multiple possible outcomes.
     """
     # Start with an empty hand, so ROLL is legal
     state = GameState(hand=[])
@@ -28,22 +18,34 @@ def test_roll_determinism_bug():
     roll_action = Action(Action.ROLL)
 
     assert roll_action in root.children, "ROLL should have been expanded"
-    child_node_1 = root.children[roll_action]
-    dice_throw_1 = child_node_1.state.dice_throw
-    print(f"First ROLL outcome: {dice_throw_1}")
+    chance_node = root.children[roll_action]
 
-    # Run MANY more simulations.
-    # In a correct implementation (Open Loop or Chance Nodes), we should re-evaluate ROLL
-    # and potentially see different outcomes mixed in, or at least different paths.
-    # But here we check if the child node remains the singleton authority.
-    mcts.run(num_simulations=100)
+    # Verify it is a ChanceNode (duck typing or class check if importable, but we can check attributes)
+    # The ChanceNode should have 'probabilities' attribute
+    assert hasattr(chance_node, "probabilities"), "Child of ROLL should be a ChanceNode"
+    assert hasattr(chance_node, "children"), "ChanceNode should have children"
 
-    child_node_2 = root.children[roll_action]
-    dice_throw_2 = child_node_2.state.dice_throw
-    print(f"Second ROLL outcome: {dice_throw_2}")
+    # With 8 dice, there are many possible sorted outcomes
+    num_children = len(chance_node.children)
+    print(f"Number of expanded outcomes for 8 dice: {num_children}")
 
-    # Verify that it is the SAME object/outcome
-    assert child_node_1 is child_node_2
-    assert dice_throw_1 == dice_throw_2
+    assert (
+        num_children > 1
+    ), "ChanceNode should have multiple children representing different rolls"
+    assert (
+        len(chance_node.probabilities) == num_children
+    ), "Probabilities should match children count"
 
-    print("Confirmed: The MCTS is reusing the cached stochastic outcome.")
+    # Verify children have different dice throws
+    dice_throws = [child.state.dice_throw for child in chance_node.children]
+    unique_throws = set(tuple(d) for d in dice_throws)
+
+    assert (
+        len(unique_throws) == num_children
+    ), "All children should have unique sorted dice throws"
+    assert sum(chance_node.probabilities) > 0.99, "Probabilities should sum to approx 1"
+    assert sum(chance_node.probabilities) < 1.01, "Probabilities should sum to approx 1"
+
+    # Check that we have specifically [1, 2, ..., 8] count logic roughly correct?
+    # Just checking we have a lot of items is enough for now.
+    pass
